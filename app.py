@@ -2,6 +2,7 @@ import os
 import re
 import tempfile
 from flask import Flask, request, render_template, jsonify, send_file, make_response, flash, redirect, url_for
+from flask_cors import CORS
 from video_downloader.core.info import get_formats
 from video_downloader.core.downloader import download
 from video_downloader.utils.helpers import validate_url
@@ -13,6 +14,7 @@ def strip_ansi(text: str) -> str:
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
+CORS(app, origins=["https://www.shuvokamal.com", "https://shuvokamal.com"])
 
 
 @app.route("/")
