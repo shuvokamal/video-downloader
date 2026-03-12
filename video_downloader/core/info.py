@@ -48,27 +48,8 @@ def _youtube_formats(url: str):
             "download_type": "direct",
             "direct_url": direct_360["url"],
         })
-
-    for height, fmt_str in [
-        (480,  "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]"),
-        (720,  "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]"),
-        (1080, "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]"),
-    ]:
-        results.append({
-            "height": height,
-            "label": f"{height}p MP4",
-            "size_mb": None,
-            "download_type": "server",
-            "format_id": fmt_str,
-        })
-
-    results.append({
-        "height": 0,
-        "label": "MP3 Audio",
-        "size_mb": round(audio_size / (1024 * 1024), 1) if audio_size else None,
-        "download_type": "server",
-        "format_id": "mp3",
-    })
+    else:
+        raise ValueError("No downloadable format found for this video.")
 
     return results, title
 
