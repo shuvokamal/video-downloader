@@ -23,7 +23,7 @@ class YouTubeDownloader:
                 "format": "bestaudio/best",
                 "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}],
                 "progress_hooks": [_progress_hook],
-                "extractor_args": {"youtube": {"player_client": ["android"]}},
+                "extractor_args": {"youtube": {"player_client": ["ios", "android", "tv_embedded"]}},
             }
         else:
             fmt = f"{self.format_id}" if self.format_id else "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best"
@@ -32,7 +32,7 @@ class YouTubeDownloader:
                 "format": fmt,
                 "merge_output_format": "mp4",
                 "progress_hooks": [_progress_hook],
-                "extractor_args": {"youtube": {"player_client": ["android"]}},
+                "extractor_args": {"youtube": {"player_client": ["ios", "android", "tv_embedded"]}},
             }
         with yt_dlp.YoutubeDL(opts) as ydl:
             ydl.download([url])

@@ -17,7 +17,7 @@ def _youtube_formats(url: str):
         "no_warnings": True,
         "socket_timeout": 10,
         "noplaylist": True,
-        "extractor_args": {"youtube": {"player_client": ["android"]}},
+        "extractor_args": {"youtube": {"player_client": ["ios", "android", "tv_embedded"]}},
     }
 
     with yt_dlp.YoutubeDL(opts) as ydl:
