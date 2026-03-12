@@ -25,6 +25,14 @@ def index():
 @app.route("/info", methods=["POST"])
 def info():
     url = request.json.get("url", "").strip()
+    # Strip playlist parameters from YouTube URLs
+    if "youtube.com" in url or "youtu.be" in url:
+        from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+        parsed = urlparse(url)
+        qs = parse_qs(parsed.query)
+        qs.pop("list", None)
+        qs.pop("index", None)
+        url = urlunparse(parsed._replace(query=urlencode({k: v[0] for k, v in qs.items()})))
     try:
         validate_url(url)
         formats, title = get_formats(url)
