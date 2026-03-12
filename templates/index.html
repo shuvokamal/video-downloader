@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Video Downloader</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f0f;
+      color: #f1f1f1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 36px 28px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    }
+
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+
+    .subtitle { color: #888; font-size: 0.88rem; margin-bottom: 24px; }
+
+    .platforms { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+
+    .platform {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .yt  { background: #ff000022; color: #ff4444; border: 1px solid #ff444444; }
+    .fb  { background: #1877f222; color: #4a9eff; border: 1px solid #1877f244; }
+    .tw  { background: #1da1f222; color: #1da1f2; border: 1px solid #1da1f244; }
+
+    .flash {
+      background: #2a1a1a;
+      border: 1px solid #ff444466;
+      color: #ff6666;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+    }
+
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
+
+    .input-row { display: flex; gap: 8px; }
+
+    input[type="url"], input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 13px 14px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #f1f1f1;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input[type="url"]:focus, input[type="text"]:focus { border-color: #555; }
+
+    .btn {
+      padding: 13px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .btn-primary { background: #f1f1f1; color: #111; }
+    .btn-primary:hover:not(:disabled) { background: #ddd; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Formats section */
+    #formats-section { display: none; margin-top: 20px; }
+
+    .video-title {
+      font-size: 0.83rem;
+      color: #aaa;
+      margin-bottom: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .format-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .format-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 52px;
+    }
+
+    .format-option:hover { border-color: #444; background: #161616; }
+    .format-option.selected { border-color: #f1f1f1; background: #1e1e1e; }
+
+    .format-label { font-size: 0.92rem; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .format-size { font-size: 0.78rem; color: #666; flex-shrink: 0; margin-left: 8px; }
+
+    .badge-fast   { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #0f3d1f; color: #4caf50; border: 1px solid #4caf5044; white-space: nowrap; }
+    .badge-server { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #2a2000; color: #f0a000; border: 1px solid #f0a00044; white-space: nowrap; }
+    .badge-audio  { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #1a0a2e; color: #b388ff; border: 1px solid #b388ff44; white-space: nowrap; }
+
+    .dl-btn-wrap { margin-top: 14px; }
+    .btn-full { width: 100%; padding: 14px; font-size: 0.95rem; }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      color: #aaa;
+      font-size: 0.85rem;
+    }
+
+    .spinner.active { display: flex; }
+
+    .spinner-ring {
+      width: 18px; height: 18px;
+      border: 2px solid #444;
+      border-top-color: #f1f1f1;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .note { margin-top: 20px; font-size: 0.75rem; color: #555; text-align: center; line-height: 1.5; }
+
+    .error-msg {
+      margin-top: 10px;
+      color: #ff6666;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      body { align-items: flex-start; padding: 12px; }
+      .card { padding: 28px 20px; border-radius: 14px; }
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Video Downloader</h1>
+    <p class="subtitle">Download public videos from your favorite platforms.</p>
+
+    <div class="platforms">
+      <span class="platform yt">YouTube</span>
+      <span class="platform fb">Facebook</span>
+      <span class="platform tw">Twitter / X</span>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Step 1: URL input -->
+    <label for="url-input">Video URL</label>
+    <div class="input-row">
+      <input
+        type="text"
+        id="url-input"
+        placeholder="Paste video URL here..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+      />
+      <button class="btn btn-primary" id="analyze-btn" onclick="analyzeUrl()">Analyze</button>
+    </div>
+    <div class="error-msg" id="error-msg"></div>
+
+    <!-- Step 2: Format picker + download -->
+    <div id="formats-section">
+      <p class="video-title" id="video-title"></p>
+      <div class="format-list" id="format-list"></div>
+
+      <form method="POST" action="/download" id="dl-form">
+        <input type="hidden" name="url" id="form-url" />
+        <input type="hidden" name="format_id" id="form-format-id" />
+        <input type="hidden" name="download_token" id="download-token" />
+        <div class="dl-btn-wrap">
+          <button type="button" class="btn btn-primary btn-full" id="dl-btn" disabled onclick="startDownload()">
+            Select a quality above
+          </button>
+        </div>
+      </form>
+
+      <div class="spinner" id="spinner">
+        <div class="spinner-ring"></div>
+        <span>Processing on server, please wait...</span>
+      </div>
+    </div>
+
+    <p class="note">Only public videos are supported.<br>On mobile, the file will open in your browser — use the share/save option to keep it.</p>
+  </div>
+
+  <script>
+    let selectedFormat = null;
+
+    async function analyzeUrl() {
+      const url = document.getElementById("url-input").value.trim();
+      const btn = document.getElementById("analyze-btn");
+
+      showError("");
+      document.getElementById("formats-section").style.display = "none";
+      if (!url) { showError("Please enter a URL."); return; }
+
+      btn.disabled = true;
+      btn.textContent = "Analyzing...";
+
+      try {
+        const res = await fetch("/info", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        if (data.error) { showError(data.error); return; }
+        showFormats(url, data.title, data.formats);
+      } catch (e) {
+        showError("Failed to reach the server.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Analyze";
+      }
+    }
+
+    function showFormats(url, title, formats) {
+      document.getElementById("video-title").textContent = title;
+      document.getElementById("form-url").value = url;
+      const list = document.getElementById("format-list");
+      list.innerHTML = "";
+      selectedFormat = null;
+
+      const dlBtn = document.getElementById("dl-btn");
+      dlBtn.disabled = true;
+      dlBtn.textContent = "Select a quality above";
+
+      formats.forEach(f => {
+        const div = document.createElement("div");
+        div.className = "format-option";
+        const badge = f.format_id === "mp3"
+          ? '<span class="badge-audio">Audio only</span>'
+          : f.download_type === "direct"
+            ? '<span class="badge-fast">Instant</span>'
+            : '<span class="badge-server">Via server</span>';
+        div.innerHTML = `
+          <span class="format-label">${f.label} ${badge}</span>
+          <span class="format-size">${f.size_mb ? f.size_mb + " MB" : ""}</span>
+        `;
+        div.addEventListener("click", () => selectFormat(div, f));
+        list.appendChild(div);
+      });
+
+      document.getElementById("formats-section").style.display = "block";
+    }
+
+    function selectFormat(el, format) {
+      document.querySelectorAll(".format-option").forEach(d => d.classList.remove("selected"));
+      el.classList.add("selected");
+      selectedFormat = format;
+      const dlBtn = document.getElementById("dl-btn");
+      dlBtn.disabled = false;
+      dlBtn.textContent = "Download";
+    }
+
+    function startDownload() {
+      if (!selectedFormat) return;
+
+      if (selectedFormat.download_type === "direct") {
+        // Create a hidden anchor and click it — works better than window.location.href on mobile
+        const a = document.createElement("a");
+        a.href = selectedFormat.direct_url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        document.getElementById("form-format-id").value = selectedFormat.format_id;
+        const token = Math.random().toString(36).slice(2);
+        document.getElementById("download-token").value = token;
+        document.getElementById("dl-btn").disabled = true;
+        document.getElementById("dl-btn").textContent = "Processing...";
+        document.getElementById("spinner").classList.add("active");
+
+        document.getElementById("dl-form").submit();
+
+        const poll = setInterval(() => {
+          if (document.cookie.includes("download_token=" + token)) {
+            clearInterval(poll);
+            document.cookie = "download_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+            document.getElementById("dl-btn").disabled = false;
+            document.getElementById("dl-btn").textContent = "Download";
+            document.getElementById("spinner").classList.remove("active");
+          }
+        }, 500);
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("error-msg");
+      el.textContent = msg;
+      el.style.display = msg ? "block" : "none";
+    }
+
+    document.getElementById("url-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") analyzeUrl();
+    });
+  </script>
+</body>
+</html>
